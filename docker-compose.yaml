@@ -1,7 +1,15 @@
 version: "3"
 services:
+  db:
+    container_name: asana_admin.db
+    image: postgres
+    networks:
+        - asana_admin
+    environment:
+      - POSTGRES_USER=devpostgres
+      - POSTGRES_PASSWORD=postgres
   app:
-    container_name: app
+    container_name: asana_admin.app
     build: .
     volumes:
       - .:/asana_admin
@@ -9,4 +17,14 @@ services:
       - "8000:8000"
     expose:
       - 8000
-    command: bash -c "python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - asana_admin
+    depends_on: 
+      - db
+    command: /bin/bash ./build.sh
+
+volumes:
+  postgres_data:
+
+networks:
+  asana_admin:
