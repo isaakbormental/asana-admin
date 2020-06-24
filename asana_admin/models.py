@@ -1,9 +1,14 @@
+import asana
+import os
 from django.db import models
 
-TOKEN = ''
-WORKSPACE = ''
+TOKEN = os.environ.get('TOKEN', None)
 client = asana.Client.access_token(TOKEN)
-
+result = list(client.workspaces.get_workspaces({}, opt_pretty=True))
+if len(result) == 0:
+    raise Exception('No workspaces exist on account')
+# Pick the first one
+WORKSPACE = result[0]['gid']
 
 class User(models.Model):
     identifier = models.CharField(max_length=200)
