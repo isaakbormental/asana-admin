@@ -4,11 +4,14 @@ from django.db import models
 
 TOKEN = os.environ.get('TOKEN', None)
 client = asana.Client.access_token(TOKEN)
-result = list(client.workspaces.get_workspaces({}, opt_pretty=True))
-if len(result) == 0:
+workspaces = list(client.workspaces.get_workspaces({}, opt_pretty=True))
+workspaces_choices = [(w['gid'], w['name']) for w in workspaces]
+
+
+if len(workspaces) == 0:
     raise Exception('No workspaces exist on account')
 # Pick the first one
-WORKSPACE = result[0]['gid']
+WORKSPACE = workspaces[0]['gid']
 
 class User(models.Model):
     identifier = models.CharField(max_length=200)
@@ -31,7 +34,6 @@ class Project(models.Model):
     name = models.CharField(max_length=200)
 
     def save(self, *args, **kwargs):
-        workspaces = client.workspaces.find_all()
         if not self.pk:
             result = client.projects.create_project({
                 'name': self.name, 'workspace': WORKSPACE
